@@ -1,0 +1,166 @@
+<Window x:Class="WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Редактирование данных" Height="300" Width="400">
+    <Grid>
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" 
+                  SelectionChanged="DataGrid_SelectionChanged"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+            <TextBox x:Name="textBoxEdit" Width="200" Margin="5"/>
+            <Button x:Name="buttonSave" Content="Сохранить" Click="ButtonSave_Click" Margin="5"/>
+        </StackPanel>
+    </Grid>
+</Window>
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Windows;
+
+namespace WpfApp
+{
+    public partial class MainWindow : Window
+    {
+        private DataTable dataTable;
+        private string connectionString = "Server=your_server;Database=your_database;User Id=your_username;Password=your_password;";
+        
+        public MainWindow()
+        {
+            InitializeComponent();
+            LoadData();
+        }
+
+        private void LoadData()
+        {
+            string query = "SELECT * FROM your_table";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    SqlDataAdapter dataAdapter = new SqlDataAdapter(query, connection);
+                    dataTable = new DataTable();
+
+                    connection.Open();
+                    dataAdapter.Fill(dataTable);
+                    dataGrid.ItemsSource = dataTable.DefaultView;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка: " + ex.Message);
+                }
+            }
+        }
+
+        private void DataGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (dataGrid.SelectedItem is DataRowView selectedRow)
+            {
+                textBoxEdit.Text = selectedRow[0].ToString(); // Измените индекс колонки по мере необходимости
+            }
+        }
+
+        private void ButtonSave_Click(object sender, RoutedEventArgs e)
+        {
+            if (dataGrid.SelectedItem is DataRowView selectedRow)
+            {
+                selectedRow[0] = textBoxEdit.Text; // Измените индекс колонки по мере необходимости
+                SaveChanges();
+            }
+        }
+
+        private void SaveChanges()
+        {
+            string updateQuery = "UPDATE your_table SET your_column = @value WHERE your_condition"; // Укажите нужные значения
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand command = new SqlCommand(updateQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@value", textBoxEdit.Text);
+                    // Добавьте параметры для условия обновления
+
+                    try
+                    {
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                        MessageBox.Show("Изменения сохранены!");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Ошибка при сохранении: " + ex.Message);
+                    }
+                }
+            }
+        }
+    }
+}
+CREATE TABLE Люди(
+id_человека INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE Услуги(
+id_услуги INT IDENTITY(1,1)
+);
+
+CREATE TABLE Анкета(
+id_анкеты INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE Покупатели(
+id_покупателя INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE Процент_от_суммы(
+id_процента_от_сумыы INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE Процент_продавца_от_суммы(
+id_процента_продавца_от_суммы INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE Право_владения(
+id_права INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE Тип_недвижимости(
+id_типа_объекта INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE Объект_недвижимости(
+id_объекта_недвижимости INT IDENTITY(1,1) PRIMARY KEY
+);
+
+CREATE TABLE ДКП(
+id_ДКП INT IDENTITY(1,1) PRIMARY KEY,
+id_покупателя INT,
+id_права INT,
+id_процента_от_сумыы INT,
+id_процента_продавца_от_суммы INT,
+CONSTRAINT FK_ПОКУПАТЕЛЬ FOREIGN KEY (id_покупателя) REFERENCES Покупатели(id_покупателя),
+CONSTRAINT FK_ПРАВА FOREIGN KEY (id_права) REFERENCES Право_владения(id_права),
+CONSTRAINT FK_ПРОЦЕНТ FOREIGN KEY (id_процента_от_сумыы) REFERENCES Процент_от_суммы(id_процента_от_сумыы),
+CONSTRAINT FK_ПРОЦЕНТ_ПРОДАВЦА FOREIGN KEY (id_процента_продавца_от_суммы) REFERENCES Процент_продавца_от_суммы(id_процента_продавца_от_суммы)
+);
+
+CREATE TABLE Договор_с_агенством(
+id_договора INT IDENTITY(1,1) PRIMARY KEY,
+id_человека INT,
+id_услуги INT,
+CONSTRAINT FK_ЧЕЛОВЕК FOREIGN KEY (id_человека) REFERENCES Люди(id_человека),
+CONSTRAINT FK_УСЛУГИ FOREIGN KEY (id_услуги) REFERENCES Услуги(id_услуги)
+);
+
+CREATE TABLE Аренда_недвижимости(
+id_аренды INT IDENTITY(1,1) PRIMARY KEY,
+id_ДКП INT,
+CONSTRAINT FK_ДКП FOREIGN KEY (id_ДКП) REFERENCES ДКП(id_ДКП)
+);
+
+CREATE TABLE Подходящие_объекты_недвижимости(
+id_недвижимости INT IDENTITY(1,1) PRIMARY KEY,
+id_человека INT,
+id_недвижимости INT,
+CONSTRAINT FK_ЮЗЕР FOREIGN KEY (id_человека) REFERENCES Люди(id_человека),
+CONSTRAINT FK_НЕДВИЖИМОСТЬ FOREIGN KEY (id_недвижимости) REFERENCES Объект_недвижимости(id_объекта_недвижимости)
+);
