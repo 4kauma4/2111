@@ -1,0 +1,9 @@
+﻿<Application x:Class="Exam.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Exam" xmlns:sys="clr-namespace:System;assembly=netstandard"
+             StartupUri="LoginWindow.xaml">
+    <Application.Resources>
+        <sys:String x:Key="ConnectionString">Data Source=MY_PC;Initial Catalog=DemoEx;Integrated Security=True;Trust Server Certificate=True</sys:String>
+    </Application.Resources>
+</Application>
